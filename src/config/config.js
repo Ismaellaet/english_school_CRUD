@@ -8,4 +8,8 @@ module.exports = {
 		host: process.env.DB_HOST,
 		dialect: "mysql",
 	},
+	define: {
+		underscored: true,
+		underscoredAll: true,
+	},
 };
