@@ -63,6 +63,18 @@ class PersonController {
 		}
 	}
 
+	static async restorePerson(req, res) {
+		const { id } = req.params;
+		try {
+			await db.Person.restore({
+				where: { id },
+			});
+			return res.json({ message: `Person ${id} successfully restored!` });
+		} catch (err) {
+			return res.status(500).json(err.message);
+		}
+	}
+
 	static async readEnrollment(req, res) {
 		const { studentId, enrollmentId } = req.params;
 

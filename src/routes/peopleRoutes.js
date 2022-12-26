@@ -8,6 +8,7 @@ router
 	.get("/people/:id", PersonController.readPerson)
 	.post("/people", PersonController.createPerson)
 	.put("/people/:id", PersonController.updatePerson)
+	.post("/people/:id/restore", PersonController.restorePerson)
 	.delete("/people/:id", PersonController.deletePerson)
 	.get("/people/:studentId/enrollments/:enrollmentId", PersonController.readEnrollment)
 	.post("/people/:studentId/enrollments/", PersonController.createEnrollment)
