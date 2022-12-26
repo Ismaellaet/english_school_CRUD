@@ -7,17 +7,17 @@ module.exports = {
 			"Levels",
 			[
 				{
-					description: "basico",
+					level_description: "basico",
 					created_at: new Date(),
 					updated_at: new Date(),
 				},
 				{
-					description: "intermediario",
+					level_description: "intermediario",
 					created_at: new Date(),
 					updated_at: new Date(),
 				},
 				{
-					description: "avancado",
+					level_description: "avancado",
 					created_at: new Date(),
 					updated_at: new Date(),
 				},
