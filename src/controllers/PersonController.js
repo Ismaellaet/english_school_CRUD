@@ -84,6 +84,39 @@ class PersonController {
 		}
 	}
 
+	static async cancelPerson(req, res) {
+		const { studentId } = req.params;
+		try {
+			await db.sequelize.transaction(async t => {
+				await db.Person.update(
+					{ active: false },
+					{
+						where: {
+							id: studentId,
+						},
+					},
+					{ transaction: t }
+				);
+
+				await db.Enrollment.update(
+					{ status: "cancelado" },
+					{
+						where: {
+							student_id: studentId,
+						},
+					},
+					{ transaction: t }
+				);
+
+				return res.json({
+					message: `Person ${studentId} successfully canceled!`,
+				});
+			});
+		} catch (err) {
+			return res.status(500).json(err.message);
+		}
+	}
+
 	static async readEnrollment(req, res) {
 		const { studentId, enrollmentId } = req.params;
 
