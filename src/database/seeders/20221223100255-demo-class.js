@@ -40,6 +40,6 @@ module.exports = {
 	},
 
 	async down(queryInterface, Sequelize) {
-		await queryInterface.bulkDelete("Turmas", null, {});
+		await queryInterface.bulkDelete("Classes", null, {});
 	},
 };
