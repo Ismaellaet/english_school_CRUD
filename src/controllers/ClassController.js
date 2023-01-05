@@ -1,22 +1,24 @@
 const db = require("../app/models");
+const { ClassesServices } = require("../services");
+const classesServices = new ClassesServices();
 
 class ClassController {
-	static async list(req, res) {
+	static async getAllClasses(req, res) {
 		try {
-			const classes = await db.Class.findAll();
+			const classes = await classesServices.read();
 			return res.json(classes);
 		} catch (err) {
 			return res.status(500).json(err.message);
 		}
 	}
 
-	static async read(req, res) {
+	static async getClassByPk(req, res) {
 		const { id } = req.params;
 
 		try {
-			const classFound = await db.Class.findByPk(id);
+			const classFound = await classesServices.read({ id });
 
-			if (!classFound) {
+			if (!classFound?.length) {
 				return res.json({ message: `Class ${id} not found!` });
 			}
 
@@ -26,37 +28,31 @@ class ClassController {
 		}
 	}
 
-	static async create(req, res) {
+	static async createClass(req, res) {
 		try {
-			const classCreated = await db.Class.create(req.body);
+			const classCreated = await classesServices.create(req.body);
 			return res.status(201).json(classCreated);
 		} catch (err) {
 			return res.status(500).json(err.message);
 		}
 	}
 
-	static async update(req, res) {
+	static async updateClass(req, res) {
 		const { id } = req.params;
-		const newInfos = req.body;
 
 		try {
-			await db.Class.update(newInfos, { where: { id } });
-			const classFound = await db.Class.findByPk(id);
-
-			if (!classFound) {
-				return res.json({ message: `Class ${id} not found!` });
-			}
-
-			return res.json(classFound);
+			await classesServices.update({ id }, req.body);
+			return res.json({ message: `Class ${id} updated successfully!` });
 		} catch (err) {
 			return res.status(500).json(err.message);
 		}
 	}
 
-	static async delete(req, res) {
+	static async deleteClass(req, res) {
 		const { id } = req.params;
+
 		try {
-			await db.Class.destroy({ where: { id }});
+			await classesServices.delete({ id });
 			return res.json({ message: `Class ${id} deleted successfully!` });
 		} catch (err) {
 			return res.status(500).json(err.message);

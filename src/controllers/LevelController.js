@@ -1,22 +1,23 @@
-const db = require("../app/models");
+const { LevelsServices } = require("../services");
+const levelsServices = new LevelsServices();
 
 class LevelController {
-	static async list(req, res) {
+	static async getAllLevels(req, res) {
 		try {
-			const levels = await db.Level.findAll();
+			const levels = await levelsServices.read();
 			return res.json(levels);
 		} catch (err) {
 			return res.status(500).json(err.message);
 		}
 	}
 
-	static async read(req, res) {
+	static async getLevelByPk(req, res) {
 		const { id } = req.params;
 
 		try {
-			const level = await db.Level.findByPk(id);
+			const level = await levelsServices.read({ id });
 
-			if (!level) {
+			if (!level?.length) {
 				return res.json({ message: `Level ${id} not found!` });
 			}
 
@@ -26,37 +27,31 @@ class LevelController {
 		}
 	}
 
-	static async create(req, res) {
+	static async createLevel(req, res) {
 		try {
-			const level = await db.Level.create(req.body);
+			const level = await levelsServices.create(req.body);
 			return res.status(201).json(level);
 		} catch (err) {
 			return res.status(500).json(err.message);
 		}
 	}
 
-	static async update(req, res) {
+	static async updateLevel(req, res) {
 		const { id } = req.params;
-		const newInfos = req.body;
 
 		try {
-			await db.Level.update(newInfos, { where: { id } });
-			const level = await db.Level.findByPk(id);
-
-			if (!level) {
-				return res.json({ message: `Level ${id} not found!` });
-			}
-
-			return res.json(level);
+			await levelsServices.update({ id }, req.body);
+			return res.json({ message: `Level ${id} updated successfully!` });
 		} catch (err) {
 			return res.status(500).json(err.message);
 		}
 	}
 
-	static async delete(req, res) {
+	static async deleteLevel(req, res) {
 		const { id } = req.params;
+
 		try {
-			await db.Level.destroy({ where: { id }});
+			await levelsServices.delete({ id });
 			return res.json({ message: `Level ${id} deleted successfully!` });
 		} catch (err) {
 			return res.status(500).json(err.message);

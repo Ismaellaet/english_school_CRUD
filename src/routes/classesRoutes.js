@@ -4,10 +4,10 @@ const ClassController = require("../controllers/ClassController");
 const router = Router();
 
 router
-	.get("/classes", ClassController.list)
-	.get("/classes/:id", ClassController.read)
-	.post("/classes", ClassController.create)
-	.put("/classes/:id", ClassController.update)
-	.delete("/classes/:id", ClassController.delete);
+	.get("/classes", ClassController.getAllClasses)
+	.get("/classes/:id", ClassController.getClassByPk)
+	.post("/classes", ClassController.createClass)
+	.put("/classes/:id", ClassController.updateClass)
+	.delete("/classes/:id", ClassController.deleteClass);
 
 module.exports = router;

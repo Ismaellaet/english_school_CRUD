@@ -1,31 +1,32 @@
-const db = require("../app/models");
+const { PeopleServices } = require("../services");
+const peopleServices = new PeopleServices();
 
 class PersonController {
-	static async listActivePeople(req, res) {
+	static async getAllPeople(req, res) {
 		try {
-			const people = await db.Person.findAll();
+			const people = await peopleServices.read();
 			return res.json(people);
 		} catch (err) {
 			return res.status(500).json(err.message);
 		}
 	}
 
-	static async listAllPeople(req, res) {
+	static async getActivePeople(req, res) {
 		try {
-			const people = await db.Person.scopes("all").findAll();
+			const people = await peopleServices.read({ active: true });
 			return res.json(people);
 		} catch (err) {
 			return res.status(500).json(err.message);
 		}
 	}
 
-	static async readPerson(req, res) {
+	static async getPersonByPk(req, res) {
 		const { id } = req.params;
 
 		try {
-			const person = await db.Person.findByPk(id);
+			const person = await peopleServices.read({ id });
 
-			if (!person) {
+			if (!person?.length) {
 				return res.json({ message: `Person ${id} not found!` });
 			}
 
@@ -37,7 +38,7 @@ class PersonController {
 
 	static async createPerson(req, res) {
 		try {
-			const person = await db.Person.create(req.body);
+			const person = await peopleServices.create(req.body);
 			return res.status(201).json(person);
 		} catch (err) {
 			return res.status(500).json(err.message);
@@ -46,17 +47,10 @@ class PersonController {
 
 	static async updatePerson(req, res) {
 		const { id } = req.params;
-		const newInfos = req.body;
 
 		try {
-			await db.Person.update(newInfos, { where: { id } });
-			const person = await db.Person.findByPk(id);
-
-			if (!person) {
-				return res.json({ message: `Person ${id} not found!` });
-			}
-
-			return res.json(person);
+			await peopleServices.update(req.body, { id });
+			return res.json({ message: `Person ${id} updated successfully!` });
 		} catch (err) {
 			return res.status(500).json(err.message);
 		}
@@ -64,8 +58,9 @@ class PersonController {
 
 	static async deletePerson(req, res) {
 		const { id } = req.params;
+
 		try {
-			await db.Person.destroy({ where: { id } });
+			await peopleServices.delete({ id });
 			return res.json({ message: `Person ${id} deleted successfully!` });
 		} catch (err) {
 			return res.status(500).json(err.message);
@@ -74,121 +69,23 @@ class PersonController {
 
 	static async restorePerson(req, res) {
 		const { id } = req.params;
+
 		try {
-			await db.Person.restore({
-				where: { id },
-			});
+			await peopleServices.restore(id);
 			return res.json({ message: `Person ${id} successfully restored!` });
 		} catch (err) {
 			return res.status(500).json(err.message);
 		}
 	}
 
-	static async cancelPerson(req, res) {
+	static async cancelPersonAndTheirEnrollments(req, res) {
 		const { studentId } = req.params;
-		try {
-			await db.sequelize.transaction(async t => {
-				await db.Person.update(
-					{ active: false },
-					{
-						where: {
-							id: studentId,
-						},
-					},
-					{ transaction: t }
-				);
-
-				await db.Enrollment.update(
-					{ status: "cancelado" },
-					{
-						where: {
-							student_id: studentId,
-						},
-					},
-					{ transaction: t }
-				);
-
-				return res.json({
-					message: `Person ${studentId} successfully canceled!`,
-				});
-			});
-		} catch (err) {
-			return res.status(500).json(err.message);
-		}
-	}
-
-	static async readEnrollment(req, res) {
-		const { studentId, enrollmentId } = req.params;
 
 		try {
-			const enrollment = await db.Enrollment.findOne({
-				where: {
-					id: enrollmentId,
-					student_id: studentId,
-				},
+			await peopleServices.cancelPersonAndTheirEnrollments(studentId);
+			return res.json({
+				message: `Person ${studentId} and their enrollments successfully canceled!`,
 			});
-
-			if (!enrollment) {
-				return res.json({ message: `Enrollment ${enrollmentId} not found!` });
-			}
-
-			return res.json(enrollment);
-		} catch (err) {
-			return res.status(500).json(err.message);
-		}
-	}
-
-	static async createEnrollment(req, res) {
-		const { studentId } = req.params;
-		try {
-			const enrollment = await db.Enrollment.create({
-				...req.body,
-				student_id: studentId,
-			});
-			return res.status(201).json(enrollment);
-		} catch (err) {
-			return res.status(500).json(err.message);
-		}
-	}
-
-	static async updateEnrollment(req, res) {
-		const { studentId, enrollmentId } = req.params;
-		const newInfos = { ...req.body };
-
-		try {
-			await db.Enrollment.update(newInfos, {
-				where: {
-					id: enrollmentId,
-					student_id: studentId,
-				},
-			});
-			const enrollment = await db.Enrollment.findOne({
-				where: {
-					id: enrollmentId,
-					student_id: studentId,
-				},
-			});
-
-			if (!enrollment) {
-				return res.json({ message: `Enrollment ${enrollmentId} not found!` });
-			}
-
-			return res.json(enrollment);
-		} catch (err) {
-			return res.status(500).json(err.message);
-		}
-	}
-
-	static async deleteEnrollment(req, res) {
-		const { studentId, enrollmentId } = req.params;
-		try {
-			await db.Enrollment.destroy({
-				where: {
-					id: enrollmentId,
-					student_id: studentId,
-				},
-			});
-			return res.json({ message: `Enrollment ${enrollmentId} deleted successfully!` });
 		} catch (err) {
 			return res.status(500).json(err.message);
 		}
